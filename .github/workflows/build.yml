@@ -19,15 +19,26 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
       
-      - name: Set up Gradle
-        uses: gradle/wrapper@main
-        with:
-          gradle-version: 8.0
+      - name: Generate Gradle Wrapper
+        run: |
+          mkdir -p gradle/wrapper
+          echo 'distributionBase=GRADLE_USER_HOME' > gradle/wrapper/gradle-wrapper.properties
+          echo 'distributionPath=wrapper/dists' >> gradle/wrapper/gradle-wrapper.properties
+          echo 'distributionUrl=https\://services.gradle.org/distributions/gradle-7.5-bin.zip' >> gradle/wrapper/gradle-wrapper.properties
+          echo 'networkTimeout=10000' >> gradle/wrapper/gradle-wrapper.properties
+          echo 'validateDistributionUrl=true' >> gradle/wrapper/gradle-wrapper.properties
+          echo 'zipStoreBase=GRADLE_USER_HOME' >> gradle/wrapper/gradle-wrapper.properties
+          echo 'zipStorePath=wrapper/dists' >> gradle/wrapper/gradle-wrapper.properties
+      
+      - name: Download Gradle Wrapper JAR
+        run: |
+          mkdir -p gradle/wrapper
+          curl -L -o gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/master/gradle/wrapper/gradle-wrapper.jar
       
       - name: Build debug APK
         run: |
-          cd app
-          gradle assembleDebug --no-daemon
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
       
       - name: Upload APK
         if: success()
