@@ -20,8 +20,8 @@ jobs:
       
       - name: Build with Gradle
         run: |
-          gradle wrapper --gradle-version=8.4
-          ./gradlew assembleDebug --no-daemon
+          gradle wrapper --gradle-version=7.6
+          ./gradlew assembleDebug
       
       - name: Upload APK
         uses: actions/upload-artifact@v4
