@@ -8,9 +8,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
       
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -18,13 +19,27 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
       
-      - name: Build with Gradle
+      - name: Setup Gradle
         run: |
-          gradle wrapper --gradle-version=7.6
-          ./gradlew assembleDebug
+          if [ ! -f "gradle/wrapper/gradle-wrapper.properties" ]; then
+            mkdir -p gradle/wrapper
+            echo "distributionBase=GRADLE_USER_HOME" > gradle/wrapper/gradle-wrapper.properties
+            echo "distributionPath=wrapper/dists" >> gradle/wrapper/gradle-wrapper.properties
+            echo "distributionUrl=https\://services.gradle.org/distributions/gradle-8.0-bin.zip" >> gradle/wrapper/gradle-wrapper.properties
+            echo "networkTimeout=10000" >> gradle/wrapper/gradle-wrapper.properties
+            echo "validateDistributionUrl=true" >> gradle/wrapper/gradle-wrapper.properties
+            echo "zipStoreBase=GRADLE_USER_HOME" >> gradle/wrapper/gradle-wrapper.properties
+            echo "zipStorePath=wrapper/dists" >> gradle/wrapper/gradle-wrapper.properties
+          fi
+      
+      - name: Build debug APK
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace
       
       - name: Upload APK
+        if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: AmapHudHelper
+          name: AmapHudHelper-debug
           path: app/build/outputs/apk/debug/*.apk
