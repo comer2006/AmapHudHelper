@@ -20,11 +20,11 @@ jobs:
       
       - name: Build with Gradle
         run: |
-          cd app
-          gradle assembleRelease --no-daemon
+          gradle wrapper --gradle-version=8.4
+          ./gradlew assembleDebug --no-daemon
       
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: AmapHudHelper
-          path: app/build/outputs/apk/release/*.apk
+          path: app/build/outputs/apk/debug/*.apk
