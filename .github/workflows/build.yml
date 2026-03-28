@@ -13,21 +13,31 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: Set up JDK 17
+      - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '11'
           distribution: 'temurin'
       
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.0'
-      
-      - name: Build Debug APK
+      - name: Create Gradle wrapper
         run: |
-          cd app
-          gradle assembleDebug --no-daemon --warning-mode=none
+          mkdir -p gradle/wrapper
+          cat > gradle/wrapper/gradle-wrapper.properties << 'EOF'
+          distributionBase=GRADLE_USER_HOME
+          distributionPath=wrapper/dists
+          distributionUrl=https\://services.gradle.org/distributions/gradle-7.6.3-bin.zip
+          zipStoreBase=GRADLE_USER_HOME
+          zipStorePath=wrapper/dists
+          EOF
+      
+      - name: Download Gradle wrapper JAR
+        run: |
+          curl -sL https://raw.githubusercontent.com/gradle/gradle/v7.6.3/gradle/wrapper/gradle-wrapper.jar -o gradle/wrapper/gradle-wrapper.jar
+      
+      - name: Build with Gradle
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon --warning-mode=none
       
       - name: Upload APK
         uses: actions/upload-artifact@v4
