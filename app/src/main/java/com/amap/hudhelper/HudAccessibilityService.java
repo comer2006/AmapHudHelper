@@ -308,7 +308,8 @@ public class HudAccessibilityService extends AccessibilityService {
     // ====== 工具方法 ======
     
     private Object invokeMethod(Object obj, String methodName) throws Exception {
-        return obj.getClass().getMethod(methodName).invoke(obj);
+        Object result = obj.getClass().getMethod(methodName).invoke(obj);
+        return result != null ? result : Integer.valueOf(0);
     }
     
     private int invokeIntMethod(Object obj, String methodName) throws Exception {
