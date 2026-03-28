@@ -253,7 +253,7 @@ public class HudAreaSelectorView extends View {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 dragType = getDragType(x, y);
-                if (dragType != DragType.NONE) {
+                if (dragType != DRAG_NONE) {
                     lastTouchX = x;
                     lastTouchY = y;
                     return true;
@@ -261,7 +261,7 @@ public class HudAreaSelectorView extends View {
                 break;
                 
             case MotionEvent.ACTION_MOVE:
-                if (dragType != DragType.NONE) {
+                if (dragType != DRAG_NONE) {
                     float dx = x - lastTouchX;
                     float dy = y - lastTouchY;
                     
