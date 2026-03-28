@@ -2,18 +2,12 @@ package com.amap.hudhelper;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
-
-import com.amap.hudhelper.databinding.ActivityAreaSelectBinding;
 
 /**
  * HUD 显示区域选择界面
