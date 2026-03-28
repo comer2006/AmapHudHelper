@@ -243,7 +243,7 @@ public class HudAccessibilityService extends AccessibilityService {
      */
     private void detectExternalDisplay() {
         mainHandler.postDelayed(() -> {
-            android.view.DisplayManager dm = (android.view.DisplayManager) getSystemService(Context.DISPLAY_SERVICE);
+            DisplayManager dm = (DisplayManager) getSystemService(Context.DISPLAY_SERVICE);
             Display[] displays = dm.getDisplays();
             
             for (Display display : displays) {
