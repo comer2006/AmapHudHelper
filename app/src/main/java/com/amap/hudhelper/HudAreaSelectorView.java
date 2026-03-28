@@ -21,15 +21,13 @@ public class HudAreaSelectorView extends View {
         LANE      // 车道信息区域
     }
     
-    // 拖动类型
-    private enum DragType {
-        NONE,
-        MOVE,        // 移动整个区域
-        RESIZE_LEFT,  // 调整左边
-        RESIZE_RIGHT, // 调整右边
-        RESIZE_TOP,   // 调整顶部
-        RESIZE_BOTTOM // 调整底部
-    }
+    // 拖动类型 - 使用 int 标志位便于组合
+    private static final int DRAG_NONE = 0;
+    private static final int DRAG_MOVE = 1;
+    private static final int DRAG_LEFT = 2;
+    private static final int DRAG_RIGHT = 4;
+    private static final int DRAG_TOP = 8;
+    private static final int DRAG_BOTTOM = 16;
     
     // 画笔
     private Paint borderPaint;
@@ -44,7 +42,7 @@ public class HudAreaSelectorView extends View {
     private AreaType activeArea = AreaType.HUD;
     
     // 拖动状态
-    private DragType dragType = DragType.NONE;
+    private int dragType = DRAG_NONE;
     private float lastTouchX, lastTouchY;
     private float touchOffsetX, touchOffsetY;
     
@@ -280,52 +278,52 @@ public class HudAreaSelectorView extends View {
                 break;
                 
             case MotionEvent.ACTION_UP:
-                dragType = DragType.NONE;
+                dragType = DRAG_NONE;
                 break;
         }
         
         return super.onTouchEvent(event);
     }
     
-    private DragType getDragType(float x, float y) {
+    private int getDragType(float x, float y) {
         float tolerance = 40f;
         RectF hud = hudRect;
         RectF lane = laneRect;
         
         // 优先检查活动区域
         if (activeArea == AreaType.HUD) {
-            if (isNear(x, y, hud.left, hud.top, tolerance)) return DragType.RESIZE_LEFT | DragType.RESIZE_TOP;
-            if (isNear(x, y, hud.right, hud.top, tolerance)) return DragType.RESIZE_RIGHT | DragType.RESIZE_TOP;
-            if (isNear(x, y, hud.left, hud.bottom, tolerance)) return DragType.RESIZE_LEFT | DragType.RESIZE_BOTTOM;
-            if (isNear(x, y, hud.right, hud.bottom, tolerance)) return DragType.RESIZE_RIGHT | DragType.RESIZE_BOTTOM;
-            if (isNear(x, y, hud.centerX(), hud.top, tolerance)) return DragType.RESIZE_TOP;
-            if (isNear(x, y, hud.centerX(), hud.bottom, tolerance)) return DragType.RESIZE_BOTTOM;
-            if (isNear(x, y, hud.left, hud.centerY(), tolerance)) return DragType.RESIZE_LEFT;
-            if (isNear(x, y, hud.right, hud.centerY(), tolerance)) return DragType.RESIZE_RIGHT;
-            if (hud.contains(x, y)) return DragType.MOVE;
+            if (isNear(x, y, hud.left, hud.top, tolerance)) return DRAG_LEFT | DRAG_TOP;
+            if (isNear(x, y, hud.right, hud.top, tolerance)) return DRAG_RIGHT | DRAG_TOP;
+            if (isNear(x, y, hud.left, hud.bottom, tolerance)) return DRAG_LEFT | DRAG_BOTTOM;
+            if (isNear(x, y, hud.right, hud.bottom, tolerance)) return DRAG_RIGHT | DRAG_BOTTOM;
+            if (isNear(x, y, hud.centerX(), hud.top, tolerance)) return DRAG_TOP;
+            if (isNear(x, y, hud.centerX(), hud.bottom, tolerance)) return DRAG_BOTTOM;
+            if (isNear(x, y, hud.left, hud.centerY(), tolerance)) return DRAG_LEFT;
+            if (isNear(x, y, hud.right, hud.centerY(), tolerance)) return DRAG_RIGHT;
+            if (hud.contains(x, y)) return DRAG_MOVE;
         }
         
         // 检查车道区域
         if (activeArea == AreaType.LANE) {
-            if (isNear(x, y, lane.left, lane.top, tolerance)) return DragType.RESIZE_LEFT | DragType.RESIZE_TOP;
-            if (isNear(x, y, lane.right, lane.top, tolerance)) return DragType.RESIZE_RIGHT | DragType.RESIZE_TOP;
-            if (isNear(x, y, lane.left, lane.bottom, tolerance)) return DragType.RESIZE_LEFT | DragType.RESIZE_BOTTOM;
-            if (isNear(x, y, lane.right, lane.bottom, tolerance)) return DragType.RESIZE_RIGHT | DragType.RESIZE_BOTTOM;
-            if (isNear(x, y, lane.centerX(), lane.top, tolerance)) return DragType.RESIZE_TOP;
-            if (isNear(x, y, lane.centerX(), lane.bottom, tolerance)) return DragType.RESIZE_BOTTOM;
-            if (isNear(x, y, lane.left, lane.centerY(), tolerance)) return DragType.RESIZE_LEFT;
-            if (isNear(x, y, lane.right, lane.centerY(), tolerance)) return DragType.RESIZE_RIGHT;
-            if (lane.contains(x, y)) return DragType.MOVE;
+            if (isNear(x, y, lane.left, lane.top, tolerance)) return DRAG_LEFT | DRAG_TOP;
+            if (isNear(x, y, lane.right, lane.top, tolerance)) return DRAG_RIGHT | DRAG_TOP;
+            if (isNear(x, y, lane.left, lane.bottom, tolerance)) return DRAG_LEFT | DRAG_BOTTOM;
+            if (isNear(x, y, lane.right, lane.bottom, tolerance)) return DRAG_RIGHT | DRAG_BOTTOM;
+            if (isNear(x, y, lane.centerX(), lane.top, tolerance)) return DRAG_TOP;
+            if (isNear(x, y, lane.centerX(), lane.bottom, tolerance)) return DRAG_BOTTOM;
+            if (isNear(x, y, lane.left, lane.centerY(), tolerance)) return DRAG_LEFT;
+            if (isNear(x, y, lane.right, lane.centerY(), tolerance)) return DRAG_RIGHT;
+            if (lane.contains(x, y)) return DRAG_MOVE;
         }
         
-        return DragType.NONE;
+        return DRAG_NONE;
     }
     
     private boolean isNear(float x, float y, float targetX, float targetY, float tolerance) {
         return Math.abs(x - targetX) <= tolerance && Math.abs(y - targetY) <= tolerance;
     }
     
-    private void resizeRect(RectF rect, DragType type, float dx, float dy) {
+    private void resizeRect(RectF rect, int type, float dx, float dy) {
         int w = getWidth();
         int h = getHeight();
         
@@ -338,23 +336,23 @@ public class HudAreaSelectorView extends View {
         float maxRight = rect.left + minSize;
         float maxBottom = rect.top + minSize;
         
-        if ((type.ordinal() & 1) != 0) { // RESIZE_LEFT
+        if ((type & DRAG_LEFT) != 0) {
             float newLeft = Math.max(0, Math.min(rect.left + dx, maxLeft));
             if (rect.width() >= minSize) rect.left = newLeft;
         }
-        if ((type.ordinal() & 2) != 0) { // RESIZE_RIGHT
+        if ((type & DRAG_RIGHT) != 0) {
             float newRight = Math.min(w, Math.max(rect.right + dx, maxRight));
             if (rect.width() >= minSize) rect.right = newRight;
         }
-        if ((type.ordinal() & 4) != 0) { // RESIZE_TOP
+        if ((type & DRAG_TOP) != 0) {
             float newTop = Math.max(0, Math.min(rect.top + dy, maxTop));
             if (rect.height() >= minSize) rect.top = newTop;
         }
-        if ((type.ordinal() & 8) != 0) { // RESIZE_BOTTOM
+        if ((type & DRAG_BOTTOM) != 0) {
             float newBottom = Math.min(h, Math.max(rect.bottom + dy, maxBottom));
             if (rect.height() >= minSize) rect.bottom = newBottom;
         }
-        if (type == DragType.MOVE) {
+        if (type == DRAG_MOVE) {
             float newLeft = Math.max(0, Math.min(rect.left + dx, w - rect.width()));
             float newTop = Math.max(0, Math.min(rect.top + dy, h - rect.height()));
             rect.offsetTo(newLeft, newTop);
