@@ -17,7 +17,6 @@
     <application
         android:allowBackup="true"
         android:label="高德HUD助手"
-        android:icon="@mipmap/ic_launcher"
         android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
         
         <!-- 主界面 -->
