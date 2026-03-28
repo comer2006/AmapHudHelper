@@ -46,5 +46,13 @@
                 android:resource="@xml/accessibility_service_config" />
         </service>
         
+        <!-- HUD 区域选择界面 -->
+        <activity
+            android:name=".HudAreaSelectActivity"
+            android:label="区域选择"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+            android:screenOrientation="landscape"
+            android:exported="false" />
+        
     </application>
 </manifest>
