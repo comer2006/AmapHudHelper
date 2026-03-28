@@ -20,18 +20,25 @@ import java.util.List;
  */
 public class MainActivity extends Activity {
     
+    private static final int REQUEST_AREA_SELECT = 1001;
+    
     private TextView statusText;
     private Button openSettingsBtn;
     private Button startServiceBtn;
+    private Button areaSelectBtn;
+    private HudDisplayConfig config;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
+        config = HudDisplayConfig.getInstance(this);
+        
         statusText = findViewById(R.id.statusText);
         openSettingsBtn = findViewById(R.id.openSettingsBtn);
         startServiceBtn = findViewById(R.id.startServiceBtn);
+        areaSelectBtn = findViewById(R.id.areaSelectBtn);
         
         // 检查服务状态
         checkServiceStatus();
@@ -41,12 +48,49 @@ public class MainActivity extends Activity {
             Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
             startActivity(intent);
         });
+        
+        // 区域选择按钮
+        areaSelectBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(this, HudAreaSelectActivity.class);
+            startActivityForResult(intent, REQUEST_AREA_SELECT);
+        });
+        
+        // 显示当前区域状态
+        updateAreaStatus();
     }
     
     @Override
     protected void onResume() {
         super.onResume();
         checkServiceStatus();
+    }
+    
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_AREA_SELECT && resultCode == RESULT_OK) {
+            // 保存配置
+            config.setHudX(data.getFloatExtra(HudAreaSelectActivity.EXTRA_HUD_X, config.getHudX()));
+            config.setHudY(data.getFloatExtra(HudAreaSelectActivity.EXTRA_HUD_Y, config.getHudY()));
+            config.setHudWidth(data.getFloatExtra(HudAreaSelectActivity.EXTRA_HUD_WIDTH, config.getHudWidth()));
+            config.setHudHeight(data.getFloatExtra(HudAreaSelectActivity.EXTRA_HUD_HEIGHT, config.getHudHeight()));
+            config.setLaneX(data.getFloatExtra(HudAreaSelectActivity.EXTRA_LANE_X, config.getLaneX()));
+            config.setLaneY(data.getFloatExtra(HudAreaSelectActivity.EXTRA_LANE_Y, config.getLaneY()));
+            config.setLaneWidth(data.getFloatExtra(HudAreaSelectActivity.EXTRA_LANE_WIDTH, config.getLaneWidth()));
+            config.setLaneHeight(data.getFloatExtra(HudAreaSelectActivity.EXTRA_LANE_HEIGHT, config.getLaneHeight()));
+            Toast.makeText(this, "区域配置已保存", Toast.LENGTH_SHORT).show();
+        }
+    }
+    
+    /**
+     * 更新区域状态显示
+     */
+    private void updateAreaStatus() {
+        String hudInfo = String.format("HUD: %.0f%%×%.0f%% 位置(%.0f,%.0f)",
+            config.getHudWidth(), config.getHudHeight(), config.getHudX(), config.getHudY());
+        String laneInfo = String.format("车道: %.0f%%×%.0f%% 位置(%.0f,%.0f)",
+            config.getLaneWidth(), config.getLaneHeight(), config.getLaneX(), config.getLaneY());
+        Toast.makeText(this, hudInfo + "\n" + laneInfo, Toast.LENGTH_LONG).show();
     }
     
     /**
