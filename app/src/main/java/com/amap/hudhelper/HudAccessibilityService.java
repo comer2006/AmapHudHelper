@@ -350,11 +350,14 @@ public class HudAccessibilityService extends AccessibilityService {
     
     public class HudPresentation extends Presentation {
         
-        private TextView dirText, distText, speedText, roadText;
+        private TextView dirText, distText, speedText, roadText, laneText;
+        private LinearLayout hudLayout, laneLayout;
         private Handler handler;
+        private HudDisplayConfig displayConfig;
         
         public HudPresentation(Context context, Display display) {
             super(context, display);
+            displayConfig = HudDisplayConfig.getInstance(context);
         }
         
         @Override
@@ -375,24 +378,31 @@ public class HudAccessibilityService extends AccessibilityService {
             FrameLayout root = new FrameLayout(getContext());
             root.setBackgroundColor(Color.BLACK);
             
-            // HUD 大小：屏幕的 1/5
-            int hudWidth = screenWidth / 5;
-            int hudHeight = screenHeight / 5;
+            // 根据配置计算 HUD 区域位置和大小（百分比转像素）
+            float hudX = displayConfig.getHudX() / 100f;
+            float hudY = displayConfig.getHudY() / 100f;
+            float hudW = displayConfig.getHudWidth() / 100f;
+            float hudH = displayConfig.getHudHeight() / 100f;
+            
+            int hudWidth = (int) (screenWidth * hudW);
+            int hudHeight = (int) (screenHeight * hudH);
+            int hudLeft = (int) (screenWidth * hudX);
+            int hudTop = (int) (screenHeight * hudY);
             
             // 创建 HUD 布局
-            LinearLayout hud = new LinearLayout(getContext());
-            hud.setOrientation(LinearLayout.VERTICAL);
-            hud.setGravity(Gravity.CENTER);
-            hud.setBackgroundColor(Color.parseColor("#404040"));
-            hud.setPadding(10, 8, 10, 8);
+            hudLayout = new LinearLayout(getContext());
+            hudLayout.setOrientation(LinearLayout.VERTICAL);
+            hudLayout.setGravity(Gravity.CENTER);
+            hudLayout.setBackgroundColor(Color.parseColor("#CC404040"));
+            hudLayout.setPadding(15, 10, 15, 10);
             
             FrameLayout.LayoutParams hudParams = new FrameLayout.LayoutParams(hudWidth, hudHeight);
-            hudParams.gravity = Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM;
-            hudParams.bottomMargin = screenHeight / 10;
+            hudParams.leftMargin = hudLeft;
+            hudParams.topMargin = hudTop;
             
             // 方向
             dirText = new TextView(getContext());
-            dirText.setTextSize(24);
+            dirText.setTextSize(28);
             dirText.setTextColor(Color.WHITE);
             dirText.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
             dirText.setGravity(Gravity.CENTER);
@@ -400,7 +410,7 @@ public class HudAccessibilityService extends AccessibilityService {
             
             // 距离
             distText = new TextView(getContext());
-            distText.setTextSize(20);
+            distText.setTextSize(24);
             distText.setTextColor(Color.parseColor("#00FF00"));
             distText.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
             distText.setGravity(Gravity.CENTER);
@@ -408,22 +418,53 @@ public class HudAccessibilityService extends AccessibilityService {
             
             // 限速
             speedText = new TextView(getContext());
-            speedText.setTextSize(14);
+            speedText.setTextSize(16);
             speedText.setTextColor(Color.parseColor("#FFA500"));
             speedText.setGravity(Gravity.CENTER);
             
             // 路名
             roadText = new TextView(getContext());
-            roadText.setTextSize(12);
+            roadText.setTextSize(14);
             roadText.setTextColor(Color.LTGRAY);
             roadText.setGravity(Gravity.CENTER);
             
-            hud.addView(dirText);
-            hud.addView(distText);
-            hud.addView(speedText);
-            hud.addView(roadText);
+            hudLayout.addView(dirText);
+            hudLayout.addView(distText);
+            hudLayout.addView(speedText);
+            hudLayout.addView(roadText);
             
-            root.addView(hud, hudParams);
+            // 车道区域
+            float laneX = displayConfig.getLaneX() / 100f;
+            float laneY = displayConfig.getLaneY() / 100f;
+            float laneW = displayConfig.getLaneWidth() / 100f;
+            float laneH = displayConfig.getLaneHeight() / 100f;
+            
+            int laneWidth = (int) (screenWidth * laneW);
+            int laneHeight = (int) (screenHeight * laneH);
+            int laneLeft = (int) (screenWidth * laneX);
+            int laneTop = (int) (screenHeight * laneY);
+            
+            laneLayout = new LinearLayout(getContext());
+            laneLayout.setOrientation(LinearLayout.VERTICAL);
+            laneLayout.setGravity(Gravity.CENTER);
+            laneLayout.setBackgroundColor(Color.parseColor("#CC003366"));
+            laneLayout.setPadding(10, 8, 10, 8);
+            
+            FrameLayout.LayoutParams laneParams = new FrameLayout.LayoutParams(laneWidth, laneHeight);
+            laneParams.leftMargin = laneLeft;
+            laneParams.topMargin = laneTop;
+            
+            laneText = new TextView(getContext());
+            laneText.setTextSize(18);
+            laneText.setTextColor(Color.parseColor("#00AAFF"));
+            laneText.setGravity(Gravity.CENTER);
+            laneText.setText("车道信息");
+            
+            laneLayout.addView(laneText);
+            
+            root.addView(hudLayout, hudParams);
+            root.addView(laneLayout, laneParams);
+            
             setContentView(root);
             
             handler = new Handler(Looper.getMainLooper());
@@ -439,6 +480,17 @@ public class HudAccessibilityService extends AccessibilityService {
                     if (roadText != null) roadText.setText(road);
                 } catch (Exception e) {
                     Log.e(TAG, "Update error", e);
+                }
+            });
+        }
+        
+        public void updateLane(String laneInfo) {
+            if (handler == null) return;
+            handler.post(() -> {
+                try {
+                    if (laneText != null) laneText.setText(laneInfo);
+                } catch (Exception e) {
+                    Log.e(TAG, "Update lane error", e);
                 }
             });
         }
