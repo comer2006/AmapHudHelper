@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.amap.hudhelper">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- 网络权限 -->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -23,7 +22,7 @@
         
         <!-- 主界面 -->
         <activity
-            android:name="com.autonavi.hudhelper.MainActivity"
+            android:name=".MainActivity"
             android:label="高德HUD助手"
             android:exported="true"
             android:launchMode="singleTask">
@@ -35,7 +34,7 @@
         
         <!-- AccessibilityService 后台服务 -->
         <service
-            android:name="com.autonavi.hudhelper.HudAccessibilityService"
+            android:name=".HudAccessibilityService"
             android:label="高德HUD辅助"
             android:description="@string/service_description"
             android:exported="false"
