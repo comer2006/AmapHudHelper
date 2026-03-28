@@ -143,15 +143,18 @@ public class HudAccessibilityService extends AccessibilityService {
             if (guideInfo == null) return;
             
             // 获取各项数据
-            String direction = getIconText(invokeMethod(guideInfo, "getIcon"));
-            String distance = formatDistance(invokeIntMethod(guideInfo, "getSegRemainDis"));
-            String speed = "限速" + invokeIntMethod(guideInfo, "getLimitedSpeed");
+            int iconType = ((Number) invokeMethod(guideInfo, "getIcon")).intValue();
+            String direction = getIconText(iconType);
+            int distance = ((Number) invokeMethod(guideInfo, "getSegRemainDis")).intValue();
+            String distanceStr = formatDistance(distance);
+            int speedVal = ((Number) invokeMethod(guideInfo, "getLimitedSpeed")).intValue();
+            String speed = "限速" + speedVal;
             String road = (String) invokeMethod(guideInfo, "getCurRoadName");
             String nextRoad = (String) invokeMethod(guideInfo, "getNextRoadName");
             
             // 更新数据
             if (!isEmpty(direction)) currentDirection = direction;
-            if (!isEmpty(distance)) currentDistance = distance;
+            if (!isEmpty(distanceStr)) currentDistance = distanceStr;
             if (!isEmpty(speed)) currentSpeed = speed;
             if (!isEmpty(road)) currentRoad = road;
             
